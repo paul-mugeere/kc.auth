@@ -1,0 +1,43 @@
+services:
+  postgres:
+      container_name: kc-auth-db-service
+      image: postgres:14
+      volumes:
+        - postgres_data:/var/lib/postgresql/data
+      env_file:
+        - .env
+      ports:
+        - 5432:5432
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+      networks:
+        - library_demo_web
+  keycloak:
+      container_name: kc-auth-service
+      build:
+        context: .
+        dockerfile: Dockerfile
+      env_file:
+        - .env
+      environment:
+        - KC_DB_URL=jdbc:postgresql://postgres/${POSTGRES_DB}
+      ports:
+        - 8080:8080
+        - 8443:8443
+      volumes:
+            - keycloak_data:/opt/keycloak/data
+      networks:
+        - library_demo_web
+      command: ["start-dev"]
+      depends_on:
+        - postgres
+volumes:
+  postgres_data:
+  keycloak_data:
+
+networks:
+  library_demo_web:
+    name: library_demo_web
