@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quirehut-sts-configs
+data:
+  # kv format
+  KC_DB_URL: "jdbc:postgresql://quirehut-db-svc:5432/quirehut-sts-db"
+  KC_DB: "postgres"

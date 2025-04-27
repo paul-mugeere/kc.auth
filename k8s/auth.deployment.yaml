@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quirehut-sts
+  labels:
+    app: quirehut-sts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quirehut-sts
+  template:
+    metadata:
+      name: quirehut-sts
+      labels:
+        app: quirehut-sts
+    spec:
+      volumes:
+        - name: data-volume
+          emptyDir: {}
+      containers:
+        - name: quirehut-sts
+          image: ghcr.io/paul-mugeere/quirehut.keycloak:24.0.3
+          imagePullPolicy: IfNotPresent
+          args: [ "start-dev" ]
+          env:
+            - name: KEYCLOAK_ADMIN
+              valueFrom:
+                secretKeyRef:
+                  key: username
+                  name: quirehut-sts-secrets
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: quirehut-sts-secrets
+            - name: KC_DB
+              valueFrom:
+                configMapKeyRef:
+                  key: KC_DB
+                  name: quirehut-sts-configs
+            - name: KC_DB_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: KC_DB_URL
+                  name: quirehut-sts-configs
+            - name: KC_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: username
+                  name: quirehut-sts-db-secrets
+            - name: KC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: quirehut-sts-db-secrets
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+              name: http
+          volumeMounts:
+            - mountPath: /opt/keycloak/data
+              name: data-volume
+#          readinessProbe:
+#            httpGet:
+#              path: /health/ready
+#              port: 9000
+      restartPolicy: Always
+      

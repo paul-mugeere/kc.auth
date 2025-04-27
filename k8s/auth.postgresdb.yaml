@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quirehut-db
+  labels:
+    app: quirehut-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quirehut-db
+  template:
+    metadata:
+      name: quirehut-db
+      labels:
+        app: quirehut-db
+    spec:
+      volumes:
+        - name: data-volume
+          emptyDir: {}
+      containers:
+        - name: quirehut-db
+          image: postgres:latest
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  key: database
+                  name: quirehut-sts-db
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  key: username
+                  name: quirehut-sts-db-secrets
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: quirehut-sts-db-secrets
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: data-volume
+          ports:
+            - containerPort: 5432
+          readinessProbe:
+            exec:
+              command: ["sh", "-c","pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      restartPolicy: Always
+      
