@@ -54,6 +54,10 @@ spec:
                 secretKeyRef:
                   key: password
                   name: quirehut-sts-db-secrets
+            - name: KC_HEALTH_ENABLED
+              value: "true"
+            - name: KC_METRICS_ENABLED
+              value: "true"
           ports:
             - containerPort: 8080
               protocol: TCP
